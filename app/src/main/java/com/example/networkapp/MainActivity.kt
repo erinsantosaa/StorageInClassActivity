@@ -1,5 +1,6 @@
 package com.example.networkapp
 
+import android.content.Context
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -12,6 +13,7 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.squareup.picasso.Picasso
 import org.json.JSONObject
+import java.io.FileInputStream
 
 // TODO (1: Fix any bugs)
 // TODO (2: Add function saveComic(...) to save and load comic info automatically when app starts)
@@ -42,16 +44,22 @@ class MainActivity : AppCompatActivity() {
         showButton.setOnClickListener {
             downloadComic(numberEditText.text.toString())
         }
-        val title = preferences.getString("title", "")
-        val description = preferences.getString("description", "")
-        val image = preferences.getString("image", "")
+        try {
+            val fileName = "comic_info.txt"
+            val fileInputStream: FileInputStream = openFileInput(fileName)
+            val length: Int = fileInputStream.available()
+            val buffer = ByteArray(length)
+            fileInputStream.read(buffer)
+            fileInputStream.close()
 
-        if (title != null && description != null && image != null) {
-            if (title.isNotEmpty() && description.isNotEmpty() && image.isNotEmpty()) {
-                titleTextView.text = title
-                descriptionTextView.text = description
-                Picasso.get().load(image).into(comicImageView)
-            }
+            val jsonString = String(buffer)
+            val comicObject = JSONObject(jsonString)
+
+            titleTextView.text = comicObject.getString("title")
+            descriptionTextView.text = comicObject.getString("alt")
+            Picasso.get().load(comicObject.getString("img")).into(comicImageView)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -71,11 +79,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun saveComic(comicObject: JSONObject) {
-        with(preferences.edit()) {
-            putString("title", comicObject.getString("title"))
-            putString("description", comicObject.getString("alt"))
-            putString("image", comicObject.getString("img"))
-            apply()
+        try {
+            val fileName = "comic_info.txt"
+            val fileOutputStream = openFileOutput(fileName, Context.MODE_PRIVATE)
+            fileOutputStream.write(comicObject.toString().toByteArray())
+            fileOutputStream.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
