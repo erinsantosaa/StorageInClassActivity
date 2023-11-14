@@ -42,7 +42,17 @@ class MainActivity : AppCompatActivity() {
         showButton.setOnClickListener {
             downloadComic(numberEditText.text.toString())
         }
+        val title = preferences.getString("title", "")
+        val description = preferences.getString("description", "")
+        val image = preferences.getString("image", "")
 
+        if (title != null && description != null && image != null) {
+            if (title.isNotEmpty() && description.isNotEmpty() && image.isNotEmpty()) {
+                titleTextView.text = title
+                descriptionTextView.text = description
+                Picasso.get().load(image).into(comicImageView)
+            }
+        }
     }
 
     private fun downloadComic (comicId: String) {
@@ -68,6 +78,5 @@ class MainActivity : AppCompatActivity() {
             apply()
         }
     }
-
 
 }
