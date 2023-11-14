@@ -1,16 +1,14 @@
 package com.example.networkapp
 
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
-import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.squareup.picasso.Picasso
 import org.json.JSONObject
@@ -20,6 +18,7 @@ import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var preferences: SharedPreferences
     private lateinit var requestQueue: RequestQueue
     lateinit var titleTextView: TextView
     lateinit var descriptionTextView: TextView
@@ -32,6 +31,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         requestQueue = Volley.newRequestQueue(this)
+        preferences = getPreferences(MODE_PRIVATE)
 
         titleTextView = findViewById<TextView>(R.id.comicTitleTextView)
         descriptionTextView = findViewById<TextView>(R.id.comicDescriptionTextView)
@@ -57,6 +57,16 @@ class MainActivity : AppCompatActivity() {
         titleTextView.text = comicObject.getString("title")
         descriptionTextView.text = comicObject.getString("alt")
         Picasso.get().load(comicObject.getString("img")).into(comicImageView)
+        saveComic(comicObject)
+    }
+
+    private fun saveComic(comicObject: JSONObject) {
+        with(preferences.edit()) {
+            putString("title", comicObject.getString("title"))
+            putString("description", comicObject.getString("alt"))
+            putString("image", comicObject.getString("img"))
+            apply()
+        }
     }
 
 
